@@ -1,0 +1,135 @@
+---
+title: "Project 3"
+author: "Duubar Villalobos Jimenez"
+date: "March 15, 2017"
+output:
+  html_document:
+    theme: lumen
+    toc: yes
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+### Web_scrap.r
+
+
+```{r}
+# Dilip's Code
+
+if (!require("stringr")) install.packages('stringr')
+if (!require("readr")) install.packages('readr')
+library(readr)
+library(stringr)
+
+
+# url='paysa.txt'
+url <- "https://raw.githubusercontent.com/dilipganesan/D607-Group-Project/patch-1/scripts/paysa.txt"
+mystring = read_file(url, locale=default_locale())
+#head(mystring)
+
+#mystring <- lapply(mystring, as.character)
+
+applyposition=str_extract_all(mystring,".*?APPLY NOW\\n(.*?).*",simplify = TRUE)
+applyposition=as.character(t(applyposition))
+applyposition=data.frame(applyposition, stringsAsFactors = FALSE)
+
+
+Base=str_extract_all(mystring,".*?Base Salary(.*?).*",simplify = TRUE)
+Base=as.character(t(Base))
+Base=data.frame(Base, stringsAsFactors = FALSE)
+
+Annual=str_extract_all(mystring,".*?Annual Bonus(.*?).*",simplify = TRUE)
+Annual=as.character(t(Annual))
+Annual=data.frame(Annual, stringsAsFactors = FALSE)
+
+
+signing=str_extract_all(mystring,".*?Signing Bonus(.*?).*",simplify = TRUE)
+signing=as.character(t(signing))
+signing=data.frame(signing, stringsAsFactors = FALSE)
+
+
+skillset=str_extract_all(mystring,".*?You can learn valuable new skills like:(.*?).*",simplify = TRUE)
+skillset=as.character(t(skillset))
+skillset=data.frame(skillset, stringsAsFactors = FALSE)
+
+
+expected=str_extract_all(mystring,".*?EXPECTED\\n(.*?).*",simplify = TRUE)
+expected=as.character(t(expected))
+expected=data.frame(expected, stringsAsFactors = FALSE)
+
+
+location=str_extract_all(mystring,"Jobs in(.*?).*",simplify = TRUE)
+location=as.character(t(location))
+location=data.frame(location, stringsAsFactors = FALSE)
+
+
+#salary=data.frame()
+#salary=data.frame(1:390,expected,Base,Annual,signing)
+
+
+dilips.data.frame <- data.frame(applyposition, Base, Annual, signing, expected, skillset, location)
+row.names(dilips.data.frame) <- NULL
+
+View(dilips.data.frame)
+```
+
+# Duubar's MySQL Code
+
+Still needs to fixing due to UTF-8 characters in the text file .txt
+
+```{r}
+# Duubar's Code adapting to Dilips Code
+
+#Library Definition
+library(RMySQL)
+
+# Need to change to correct local root password for the local database
+myLocalPassword <- 'pswrd'  # Need to change to your local MySQL password
+myLocalUser <- 'root'
+myLocalHost <- 'localhost'
+myLocalMySQLSchema <- 'cms_Team3' # Need Meaningful name
+myLocalTableName <- 'tbl_Team3' # Need Meaningful name
+
+
+# Establish MySQLconnection
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost)
+# Creating a database if it doesn't exist by employing RMySQL() in R
+MySQLcode <- paste0("CREATE SCHEMA IF NOT EXISTS ",myLocalMySQLSchema,";",sep="")
+dbSendQuery(mydbconnection, MySQLcode)
+
+# Table exists?
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+# Check to see if table data exist.
+myLocalTableName <- tolower(myLocalTableName)
+if (dbExistsTable(mydbconnection, name = myLocalTableName)  == FALSE){
+# If the table does not exist, download .zip and write .csv file into MySQL
+my.data <- dilips.data.frame  # <----- Dilips Data Frame
+# Need to fix Invalid utf8 character string Error; this is causing not to load data into MySQL
+# Then Write the table in MySQL
+dbWriteTable(mydbconnection, name= myLocalTableName , value= my.data)
+
+} else {
+# Read the data from the local table
+my.data <- dbReadTable(mydbconnection, name = myLocalTableName)
+}
+
+# Closing connection with local Schema
+dbDisconnect(mydbconnection)
+
+#To close all open connections
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+```
+
+
