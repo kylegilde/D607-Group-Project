@@ -88,12 +88,21 @@ Still needs to fixing due to UTF-8 characters in the text file .txt
 #Library Definition
 library(RMySQL)
 
+# Stablishes connection to Remote SQL
+url <- "http://mydvtech.com/libraries/mysql.csv"
+MySQLConnect <- read.csv(url, header = FALSE, sep = ",", stringsAsFactors=FALSE)
+
 # Need to change to correct local root password for the local database
-myLocalPassword <- 'pswrd'  # Need to change to your local MySQL password
-myLocalUser <- 'root'
-myLocalHost <- 'localhost'
-myLocalMySQLSchema <- 'cms_Team3' # Need Meaningful name
-myLocalTableName <- 'tbl_Team3' # Need Meaningful name
+# myLocalPassword <- 'pswrd'
+# myLocalUser <- 'root'
+# myLocalHost <- 'localhost'
+
+# Remote access
+myLocalPassword <- MySQLConnect$V1
+myLocalUser <- MySQLConnect$V2
+myLocalHost <- 'mydvtech.com'
+myLocalMySQLSchema <- 'mydvtech_cuny' # Need Meaningful name
+myLocalTableName <- 'tbl_DATA607Team3' # Need Meaningful name
 
 
 # Establish MySQLconnection
