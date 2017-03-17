@@ -1,0 +1,61 @@
+---
+title: "TidyingDFSkillset"
+author: "Ambra"
+date: "March 17, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r df tidying}
+
+if (!require("tidyverse")) install.packages('tidyverse')
+library(tidyverse)
+library(stringr)
+
+##This is reading from my local drive- if someone can upload the df to the Team 3 github folder(currently I have no rights), one could pull it from there
+skillsetdf<- read_csv("C:/Users/ambra/Desktop/Data 607/W7/DilipsDF.csv", col_names = TRUE)
+
+#1) Text manipulation and transformations
+
+##skillset col- remove extra text
+
+skillsetdf[,7]<- sapply (skillsetdf[,7], function(x) str_trim(str_replace_all(x, "(^.*:)|(and more)|[[.]]$", "")))
+
+
+##break down skillset into multiple columns (for Kyle and Raghu -@tidyingteam: just a few suggestions, do we want to replace K with zeros?)
+maxcol<- max(sapply(strsplit(as.character(skillsetdf$skillset),','),length))
+skillsetdf<- skillsetdf %>%  separate(skillset,paste0("Skill",1:maxcol), sep=",")
+
+
+##Clean up salary and bonus columns 
+
+extractsalary<- function(x) {
+str_extract_all(strsplit(x, "[$]"), "[[:digit:]]*K")}
+
+for (i in 1:nrow(skillsetdf)){
+  
+        skillsetdf$Base[i]<-extractsalary(skillsetdf$Base[[i]])
+        skillsetdf$Annual[i]<- extractsalary(skillsetdf$Annual[[i]])
+        skillsetdf$signing[i]<- extractsalary(skillsetdf$signing[[i]])
+        skillsetdf$expected[i]<- extractsalary(skillsetdf$expected[[i]])
+        
+        }
+
+##clean up position (@tidyingteam: we may want to split this col into 2 to keep position and firm separate?)
+skillsetdf[,2]<- sapply (skillsetdf[,2], function(x) str_trim(str_replace_all(x, "(APPLY NOW\\r\\n)|(in\\s.*)","")))
+
+
+##clean up location column (@tidyinteam: do we want to add geo coordinates to facilitate mapping?)
+skillsetdf[,ncol(skillsetdf)]<- sapply (skillsetdf[,ncol(skillsetdf)], function(x) str_trim(str_replace_all(x, "Jobs in", "")))
+
+
+
+View(skillsetdf)
+
+
+```
+
+
