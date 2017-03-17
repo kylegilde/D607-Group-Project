@@ -88,7 +88,7 @@ Still needs to fixing due to UTF-8 characters in the text file .txt
 #Library Definition
 library(RMySQL)
 
-# Stablishes connection to Remote SQL
+# Stablish connection to Remote SQL
 url <- "http://mydvtech.com/libraries/mysql.csv"
 MySQLConnect <- read.csv(url, header = FALSE, sep = ",", stringsAsFactors=FALSE)
 
@@ -134,6 +134,7 @@ dbWriteTable(mydbconnection, name= myLocalTableName , value= my.data)
 my.data <- dbReadTable(mydbconnection, name = myLocalTableName)
 }
 
+View(my.data)
 # Closing connection with local Schema
 dbDisconnect(mydbconnection)
 
