@@ -1,0 +1,273 @@
+---
+title: "Project 3"
+author: "Duubar Villalobos Jimenez"
+date: "March 15, 2017"
+# output:
+#   html_document:
+#     theme: lumen
+#     toc: yes
+#     code_folding: hide
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+
+---
+#Load Packages
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+
+#create vector with all needed packages
+load_packages <- c("RMySQL","tidyverse", "htmlTable", "stringr", "prettydoc", "janitor")
+
+#see if we need to install 
+new.pkg <- load_packages[!(load_packages %in% installed.packages()[, "Package"])]
+if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE, warn.conflicts = FALSE)
+
+#require
+sapply(load_packages, require, character.only = TRUE, quietly = TRUE)
+#CODE SOURCE DOCUMENTATION: https://gist.github.com/stevenworthington/3178163
+```
+
+
+# Web_scrap.r
+
+#Dilip's Tidying (Part 1)
+
+##Load the webscrape and take a look at it
+```{r Dilip}
+
+url <- "https://raw.githubusercontent.com/dilipganesan/D607-Group-Project/patch-1/scripts/paysa.txt"
+mystring = read_file(url, locale=default_locale())
+
+#sample the input
+writeLines(str_sub(mystring, 1, 800))
+```
+
+
+```{r Dilip_regex}
+applyposition=str_extract_all(mystring,".*?APPLY NOW\\n(.*?).*",simplify = TRUE)
+applyposition=as.character(t(applyposition))
+applyposition=data.frame(applyposition, stringsAsFactors = FALSE)
+
+
+Base=str_extract_all(mystring,".*?Base Salary(.*?).*",simplify = TRUE)
+Base=as.character(t(Base))
+Base=data.frame(Base, stringsAsFactors = FALSE)
+
+Annual=str_extract_all(mystring,".*?Annual Bonus(.*?).*",simplify = TRUE)
+Annual=as.character(t(Annual))
+Annual=data.frame(Annual, stringsAsFactors = FALSE)
+
+
+signing=str_extract_all(mystring,".*?Signing Bonus(.*?).*",simplify = TRUE)
+signing=as.character(t(signing))
+signing=data.frame(signing, stringsAsFactors = FALSE)
+
+
+skillset=str_extract_all(mystring,".*?You can learn valuable new skills like:(.*?).*",simplify = TRUE)
+skillset=as.character(t(skillset))
+skillset=data.frame(skillset, stringsAsFactors = FALSE)
+
+
+expected=str_extract_all(mystring,".*?EXPECTED\\n(.*?).*",simplify = TRUE)
+expected=as.character(t(expected))
+expected=data.frame(expected, stringsAsFactors = FALSE)
+
+
+location=str_extract_all(mystring,"Jobs in(.*?).*",simplify = TRUE)
+location=as.character(t(location))
+location=data.frame(location, stringsAsFactors = FALSE)
+
+
+#salary=data.frame()
+#salary=data.frame(1:390,expected,Base,Annual,signing)
+
+
+dilips.data.frame <- data.frame(applyposition, Base, Annual, signing, expected, skillset, location)
+row.names(dilips.data.frame) <- NULL
+
+# View(dilips.data.frame)
+```
+##Let's take a look at the results
+```{r, result1}
+htmlTable(head(dilips.data.frame))
+```
+
+
+
+#Ambra's Tidying (Part 2)
+
+```{r df tidying2}
+
+#stitch Duubar's data into Ambra's code
+skillsetdf<- dilips.data.frame
+
+#1) Text manipulation and transformations
+
+##skillset col- remove extra text
+skillsetdf[,7]<- sapply (skillsetdf[,7], function(x) str_trim(str_replace_all(x, "(^.*:)|(and more)|[[.]]$", "")))
+
+
+##break down skillset into multiple columns (for Kyle and Raghu -@tidyingteam: just a few suggestions, do we want to replace K with zeros?)
+maxcol<- max(sapply(strsplit(as.character(skillsetdf$skillset),','),length))
+skillsetdf<- skillsetdf %>%  separate(skillset,paste0("Skill",1:maxcol), sep=",")
+
+
+##Clean up salary and bonus columns 
+
+extractsalary<- function(x) {
+str_extract_all(strsplit(x, "[$]"), "[[:digit:]]*K")}
+
+for (i in 1:nrow(skillsetdf)){
+  
+        skillsetdf$Base[i]<-extractsalary(skillsetdf$Base[[i]])
+        skillsetdf$Annual[i]<- extractsalary(skillsetdf$Annual[[i]])
+        skillsetdf$signing[i]<- extractsalary(skillsetdf$signing[[i]])
+        skillsetdf$expected[i]<- extractsalary(skillsetdf$expected[[i]])
+        
+        }
+
+##clean up position (@tidyingteam: we may want to split this col into 2 to keep position and firm separate?)
+skillsetdf[,2]<- sapply (skillsetdf[,2], function(x) str_trim(str_replace_all(x, "(APPLY NOW\\r\\n)|(in\\s.*)","")))
+
+
+##clean up location column (@tidyinteam: do we want to add geo coordinates to facilitate mapping?)
+skillsetdf[,ncol(skillsetdf)]<- sapply (skillsetdf[,ncol(skillsetdf)], function(x) str_trim(str_replace_all(x, "Jobs in", "")))
+
+
+#View(skillsetdf)
+```
+
+##Let's take a look at the results
+
+```{r, result2}
+htmlTable(head(skillsetdf))
+```
+
+#Kyle's Tidying (Part 3)
+
+```{r tidying}
+kyle_df <- skillsetdf
+
+# normalize column names
+kyle_df <- kyle_df %>% 
+  clean_names() %>% 
+  rename(position = applyposition, 
+         base_salary = base, 
+         annual_bonus = annual, 
+         signing_bonus = signing
+         )
+
+#tidy & create position & company columns
+kyle_df$position <- kyle_df$position %>% 
+  str_replace("APPLY NOW\\n", "") %>% 
+  str_trim() %>% 
+  str_extract(".+ in ") %>% 
+  str_sub(1, -5)
+kyle_df <- separate(kyle_df, position, c("position", "company"), sep = " at ")
+
+# clean up the dollar variables
+clean_dollars <- function(strings){
+  strings %>% 
+    str_replace("K", "000") %>%
+    str_replace("character(0)", "") %>% 
+    as.numeric() %>%
+    return()
+}
+kyle_df <- kyle_df %>% 
+  mutate(
+    base_salary = clean_dollars(base_salary),
+    annual_bonus = clean_dollars(annual_bonus),
+    signing_bonus = clean_dollars(signing_bonus),
+    expected = clean_dollars(expected)
+  )
+
+# gather the skills into one column & clean them
+# I'm not sure if we wanted to put all of the skills into one column, but I think that someone mentioned doing that
+kyle_df <- kyle_df %>% 
+  gather(skill_num, skill, skill1:skill6) %>% 
+  filter(!is.na(skill)) %>% 
+  select(-skill_num) %>% 
+  mutate(skill = str_replace(skill,"(.+like: | and more.|and )", "")) %>% 
+  mutate(skill = str_replace(skill,"\\.", "")) 
+
+  
+#separate location into city and state
+kyle_df <- kyle_df %>% 
+  separate(location, c("city", "state"), sep = ", ") %>% 
+  mutate(state = ifelse(city == "Palo Alto","CA",state))
+  
+#View(kyle_df)
+```
+##Let's take a look at the results
+```{r result3}
+htmlTable(head(kyle_df))
+```
+
+
+
+# Duubar's MySQL Code
+
+Still needs to fixing due to UTF-8 characters in the text file .txt
+
+```{r}
+# Duubar's Code adapting to Dilips Code
+
+# Establish connection to Remote SQL
+url <- "http://mydvtech.com/libraries/mysql.csv"
+MySQLConnect <- read.csv(url, header = FALSE, sep = ",", stringsAsFactors=FALSE)
+
+# Need to change to correct local root password for the local database
+# myLocalPassword <- 'pswrd'
+# myLocalUser <- 'root'
+# myLocalHost <- 'localhost'
+
+# Remote access
+myLocalPassword <- MySQLConnect$V1
+myLocalUser <- MySQLConnect$V2
+myLocalHost <- 'mydvtech.com'
+myLocalMySQLSchema <- 'mydvtech_cuny' # Need Meaningful name
+myLocalTableName <- 'tbl_DATA607Team3' # Need Meaningful name
+
+
+# Establish MySQLconnection
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost)
+# Creating a database if it doesn't exist by employing RMySQL() in R
+MySQLcode <- paste0("CREATE SCHEMA IF NOT EXISTS ",myLocalMySQLSchema,";",sep="")
+dbSendQuery(mydbconnection, MySQLcode)
+
+# Table exists?
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+
+# Check to see if table data exist.
+myLocalTableName <- tolower(myLocalTableName)
+if (dbExistsTable(mydbconnection, name = myLocalTableName)  == FALSE){
+# If the table does not exist, download .zip and write .csv file into MySQL
+my.data <- kyle_df  # <----- Kyle's Data Frame
+# Need to fix Invalid utf8 character string Error; this is causing not to load data into MySQL
+# Then Write the table in MySQL
+dbWriteTable(mydbconnection, name= myLocalTableName , value= my.data)
+
+} else {
+# Read the data from the local table
+my.data <- dbReadTable(mydbconnection, name = myLocalTableName)
+}
+
+#View(my.data)
+# Closing connection with local Schema
+dbDisconnect(mydbconnection)
+
+#To close all open connections
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+```
+
+
+
