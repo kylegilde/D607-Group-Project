@@ -1,0 +1,454 @@
+---
+title: "Project - Data Science Skills"
+author: "Ambra, Dilip, Kyle, Pavan, Raghu, Tom, Duubar"
+date: "March 20, 2017"
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+    toc: yes
+subtitle: CUNY MSDA DATA 607 Project 3
+---
+
+# Assignment
+
+## Project - Data Science Skills
+
+This is a project for your entire class section to work on together, since being able to work effectively on a virtual team is a 
+key **"soft skill"** for data scientists.
+
+Please note especially the requirement about making a presentation during our first meetup after the project is due.
+
+W. Edwards Deming said, "In God we trust, all others must bring data." Please use data to answer the question, **"Which are the most valued data science skills?"** Consider your work as an exploration; there is not necessarily a "right answer."
+
+**Grading rubric:**
+
++ You will need to determine what tool(s) you'll use as a group to effectively collaborate, share code and any project documentation 
+(such as motivation, approach, findings).
+
++ You will have to determine what data to collect, where the data can be found, and how to load it. The data that you decide to collect should reside in a relational database, in a set of normalized tables.
+
++ You should perform any needed tidying, transformations, and exploratory data analysis in R.
+
++ Your deliverable should include all code, results, and documentation of your motivation, approach, and findings.
+
++ As a group, you should appoint (at least) three people to lead parts of the presentation.
+
++ While you are strongly encouraged (and will hopefully find it fun) to try out statistics and data models, your grade will not be affected by the statistical analysis and modeling performed  (since this is a semester one course on Data Acquisition and Management).
+
++ Every student must be prepared to explain how the data was collected, loaded, transformed, tidied, and analyzed for outliers, etc. in 
+our Meetup.
+
++ This is the only way I'll have to determine that everyone actively participated in the process, so you need to hold yourself responsible for understanding what your class-size team did!  If you are unable to attend the meet up, then you need to either present to me one-on-one before the meetup presentation, or post a 3 to 5 minute video (e.g. on YouTube) explaining the process.  Individual 
+students will not be responsible for explaining any forays into statistical analysis, modeling, data mining, regression, decision trees, etc.
+
+You are encouraged to start early, ask many questions, actively post on the provided discussion forum, etc
+
+![](C:/Users/mydvtech/Documents/GitHub/MSDA/Spring-2017/607/Projects/Project3/Team3Project3Final/Capture.png)
+
+One example graph:  Top Forest Ranger Skills (based on number of resumes with specified skills). You are encouraged to come up with your own approach that may use different kinds of data sources.
+
+# Team members
+
+Name                         | Team              | Email
+-----------------------------|-------------------|--------------------------------------
+Pavan Akula                  | Team 3            | akulapavan@hotmail.com
+Ambra  Baboni Alexander      | Team 3            | ambra8due@hotmail.com
+Thomas Detzel                | Team 3            | tomdetz@gmail.com
+Dilip  Ganesan               | Team 3            | dilipgan@gmail.com
+Kyle   Gilde                 | Team 3            | kylegilde@gmail.com
+Raghunathan Rammnath         | Team 3            | raghu74us@gmail.com
+Duubar Villalobos Jimenez    | Team 3            | mydvtech@gmail.com
+
+# Solution
+
+## Library definitions
+
+
+```{r library_definitions, warning=FALSE, error=FALSE, cache=FALSE, results='hide', message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Create vector with all needed libraries
+load_packages <- c("knitr", "RMySQL","tidyverse", "htmlTable", "stringr", "prettydoc", "janitor")
+
+# Check to see if wee need a library in order to to install it
+new.pkg <- load_packages[!(load_packages %in% installed.packages()[, "Package"])]
+if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE, warn.conflicts = FALSE)
+
+# Library
+sapply(load_packages, library, character.only = TRUE, quietly = TRUE)
+#CODE SOURCE DOCUMENTATION: https://gist.github.com/stevenworthington/3178163
+```
+
+As a team, we had a brainstorm meetup in which some roles and lines of work were defined, here are the most important agreements.
+
+## Initial agreements
+
+### GitHub
+
+We have agreed to create a **GitHub** repository and it's name will be representative; hence we have created **D607-Group-Project** and all of our team members have been grated access and instructed to post and read from a single repository location.
+
+https://github.com/kylegilde/D607-Group-Project
+
+### Slack
+
+We have agreed to use **Slack** as our Team Collaboration platform in order to communicate and keep track of things. From Slack we were able to perform live meetups by using "join.me" permitting screen sharing, this allowing some presentations in order to get updated in some specific topics.
+
+https://cuny-data607.slack.com
+
+### Google Docs
+
+We have created a **google docs** virtual shared file in order for us to keep track and remind us of dead lines and responsibilities.
+
+https://docs.google.com/spreadsheets/d/1QNhmk6ebuFKYiyqrWJewhzT-PnrYgntZ09MC3yqpcx8/edit#gid=1903046315
+
+## Data
+
+After some research and analysis, we have decided to collect data located in job postings. We found out that many of these postings offer some raw information related to position, location, company, salary and skills, providing a good possible indicator in order to the most valued data science skills.
+
+Please note that this data has been collected from a single source and it relates to current job postings. No assumption should be made for past or future data science skills or any other conclusion we might end up for this project.
+
+## URL
+
+We are collecting current data from a job postings website, the company name is **Paysa** and their url is https://www.paysa.com
+
+## Collection
+
+For this project since neither one of our team members was able to find any data collected in a normalized table, csv or dataset, nor we have any experience scrapping web sites automatically, we ended up creating a text file by copying blocks of listings from the paysa site related to **data science** job postings and pastying into a text file. In total we have collected 390 job postings for this project.
+
+Once we were able to extract the desired information, we have named the file **paysa.txt** and uploaded the file in a single **GitHub** repository.
+
+## Initial Extraction
+
+Once we had our **paysa.txt** file with our desired information, we proceeded to extract some valuable information from it and created a data frame with the desired information, the code was shared among us in order to continue further cleaning and tidying of the data frame.
+
+### Webscrape
+
+The below code is able to read and webscrape our paysa.txt text file from our GitHub repository.
+
+```{r Dilip_Webscrape, warning=FALSE, error=FALSE, message=FALSE}
+
+url <- "https://raw.githubusercontent.com/dilipganesan/D607-Group-Project/patch-1/scripts/paysa.txt"
+mystring = read_file(url, locale=default_locale())
+```
+
+Sample of the input file.
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+writeLines(str_sub(mystring, 1, 800))
+```
+
+### From text file to data frame
+
+The below code will extract a series of columns containing the desired information.
+
+```{r Dilip_DataFrame, warning=FALSE, error=FALSE, message=FALSE}
+
+applyposition=str_extract_all(mystring,".*?APPLY NOW\\n(.*?).*",simplify = TRUE)
+applyposition=as.character(t(applyposition))
+applyposition=data.frame(applyposition, stringsAsFactors = FALSE)
+
+
+Base=str_extract_all(mystring,".*?Base Salary(.*?).*",simplify = TRUE)
+Base=as.character(t(Base))
+Base=data.frame(Base, stringsAsFactors = FALSE)
+
+Annual=str_extract_all(mystring,".*?Annual Bonus(.*?).*",simplify = TRUE)
+Annual=as.character(t(Annual))
+Annual=data.frame(Annual, stringsAsFactors = FALSE)
+
+
+signing=str_extract_all(mystring,".*?Signing Bonus(.*?).*",simplify = TRUE)
+signing=as.character(t(signing))
+signing=data.frame(signing, stringsAsFactors = FALSE)
+
+
+skillset=str_extract_all(mystring,".*?You can learn valuable new skills like:(.*?).*",simplify = TRUE)
+skillset=as.character(t(skillset))
+skillset=data.frame(skillset, stringsAsFactors = FALSE)
+
+
+expected=str_extract_all(mystring,".*?EXPECTED\\n(.*?).*",simplify = TRUE)
+expected=as.character(t(expected))
+expected=data.frame(expected, stringsAsFactors = FALSE)
+
+
+location=str_extract_all(mystring,"Jobs in(.*?).*",simplify = TRUE)
+location=as.character(t(location))
+location=data.frame(location, stringsAsFactors = FALSE)
+
+ID <- 1:nrow(applyposition)
+
+dilips.data.frame <- data.frame(ID, applyposition, Base, Annual, signing, expected, skillset, location)
+
+row.names(dilips.data.frame) <- NULL
+```
+
+Sample of the data frame.
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+htmlTable(head(dilips.data.frame), rnames=FALSE)
+```
+
+## MySQL
+
+Once we had some raw data into a data frame, we proceeded to store this into a table in a remote MySQL server. For this, we have setup the remote server and provided clear instructions for everyone of the team members to read the raw tables from the designated MySQL server.
+
+The remote server setup is as follows **MySQL URL** mydvtech.com, reason why a commercial paid for services site was elected is because in our day to day work we will be reading and storing company data in company portals, this way we can start practicing on diverse tools and techniques to connect, read and write information in such locations.
+
+In order for everyone to understand how this was achieved and learn how to connect to a remote MySQL server by using cPanel, a manual with a series of steps was created and distributed among the team members.
+
+http://rpubs.com/dvillalobos/confMySQLcPanel
+
+### MySQL connection setup
+
+```{r}
+# Read password and user name from remote location in order to establish connection to MySQL
+url <- "http://mydvtech.com/libraries/mysql.csv"
+MySQLConnect <- read.csv(url, header = FALSE, sep = ",", stringsAsFactors=FALSE)
+
+# Remote access definitions
+myLocalPassword <- MySQLConnect$V1
+myLocalUser <- MySQLConnect$V2
+myLocalHost <- 'mydvtech.com'
+myLocalMySQLSchema <- 'mydvtech_cuny'
+myLocalTableName <- 'tbl_paysatxt'
+```
+
+### Writing data into MySQL
+
+The below code will connect to our remote MySQL server and write the previous data frame in a raw form into a table.
+
+```{r Duubar_MySQL_Write, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+# Assigning previous data frame
+my.data <- dilips.data.frame
+
+# Creating a scheme if it doesn't exist by employing RMySQL() in R
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost)
+MySQLcode <- paste0("CREATE SCHEMA IF NOT EXISTS ",myLocalMySQLSchema,";",sep="")
+dbSendQuery(mydbconnection, MySQLcode)
+
+# Write our data frame into MySQL
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+myLocalTableName <- tolower(myLocalTableName)
+MySQLcode <- paste0("DROP TABLE IF EXISTS ",myLocalTableName,";",sep="")
+dbSendQuery(mydbconnection, MySQLcode)
+dbWriteTable(mydbconnection, name= myLocalTableName , value= my.data) 
+
+# Closing connection with local Schema
+dbDisconnect(mydbconnection)
+
+# Close all other open connections we might have
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+```
+
+
+### Reading data from MySQL
+
+For analysis and testing, we were encouraged to read from our MySQL instead of GitHub (basically GitHub was our backup plan is we had problems with MySQL).
+
+One of the advantages of using a remote MySQL is the speed in terms of reading and transfering data, we noticed an increadible amount of resources employed when reading from our GitHub repository versus reading from MySQL. And also if we locate extra data, we will avoid having localized data sets on each one of our team memebers local workbench.
+
+The below code will connect to our remote MySQL server and read the previous data frame in a raw form from our table.
+
+```{r Duubar_MySQL_Read, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+# Creating a scheme if it doesn't exist by employing RMySQL() in R
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+
+# Check to see if our table exists? and if the table does not exist,  then we need to write our data frame into MySQL
+myLocalTableName <- tolower(myLocalTableName)
+if (dbExistsTable(mydbconnection, name = myLocalTableName)  == TRUE){
+  my.data <- dbReadTable(mydbconnection, name = myLocalTableName)
+
+} else {
+  print("Error, the table does not exist")
+}
+
+# Closing connection with local Schema
+dbDisconnect(mydbconnection)
+
+#To close all open connections
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+```
+
+## Tidying and transformation
+
+From the above work, we have divided our tidying and transformation into several tasks, below are the text manipulations and tranformations performed.
+
+```{r Ambra_Expressions, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+
+skillsetdf<- my.data
+
+# Working with Skillset column by removing extra text
+skillsetdf[,7]<- sapply (skillsetdf[,7], function(x) str_trim(str_replace_all(x, "(^.*:)|(and more)|[[.]]$", "")))
+
+# Break down skillset into multiple columns
+maxcol<- max(sapply(strsplit(as.character(skillsetdf$skillset),','),length))
+skillsetdf<- skillsetdf %>%  separate(skillset,paste0("Skill",1:maxcol), sep=",")
+
+# Clean up salary and bonus columns 
+extractsalary<- function(x) {
+str_extract_all(strsplit(x, "[$]"), "[[:digit:]]*K")}
+
+for (i in 1:nrow(skillsetdf)){
+        skillsetdf$Base[i]<-extractsalary(skillsetdf$Base[[i]])
+        skillsetdf$Annual[i]<- extractsalary(skillsetdf$Annual[[i]])
+        skillsetdf$signing[i]<- extractsalary(skillsetdf$signing[[i]])
+        skillsetdf$expected[i]<- extractsalary(skillsetdf$expected[[i]])
+}
+
+# Clean up position
+skillsetdf[,2]<- str_trim(str_replace_all(skillsetdf[,2], "APPLY NOW\n",""))
+
+# Clean up location column
+skillsetdf[,ncol(skillsetdf)]<- sapply (skillsetdf[,ncol(skillsetdf)], function(x) str_trim(str_replace_all(x, "Jobs in", "")))
+```
+
+New cleaned table results
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+htmlTable(head(skillsetdf), rnames=FALSE)
+```
+
+Continuing with our clean up
+
+```{r Kyle_expressions, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+
+kyle_df <- skillsetdf
+
+# Normalize column names
+kyle_df <- kyle_df %>% 
+  clean_names() %>% 
+  rename(position = applyposition, 
+         `Base Salary` = base, 
+         `Annual Salary` = annual, 
+         `Signing Salary` = signing,
+         `Expected Salary` = expected
+         )
+
+#tidy & create position & company columns
+kyle_df <- separate(kyle_df, position, c("position", "company"), sep = " at ")
+kyle_df <- separate(kyle_df, company, c("company"), sep = " in ")
+
+# clean up the dollar variables
+clean_dollars <- function(strings){
+  strings %>% 
+    str_replace("K", "000") %>%
+    str_replace("character(0)", "") %>% 
+    as.numeric() %>%
+    return()
+}
+
+kyle_df <- kyle_df %>% 
+  mutate(
+    `Base Salary`= clean_dollars(`Base Salary`),
+    `Annual Salary` = clean_dollars(`Annual Salary`),
+    `Signing Salary` = clean_dollars(`Signing Salary`),
+    `Expected Salary` = clean_dollars(`Expected Salary`)
+  )
+
+# Gather the skills into one column & clean them
+kyle_df <- kyle_df %>% 
+  gather(skill_num, skill, skill1:skill6) %>% 
+  filter(!is.na(skill)) %>% 
+  select(-skill_num) %>% 
+  mutate(skill = str_replace(skill,"(.+like: | and more.|and )", "")) %>% 
+  mutate(skill = str_replace(skill,"\\.", "")) 
+
+#separate location into city and state
+kyle_df <- kyle_df %>% 
+  separate(location, c("city", "state"), sep = ", ") %>% 
+  mutate(state = ifelse(city == "Palo Alto","CA",state))
+
+# Keep skills into one individual data frame
+skills_only_df <- kyle_df
+
+# Obtaining the number of skills
+nskills <- dim(kyle_df)[1]
+
+# Creating one single column for Salary
+kyle_df <- kyle_df %>% gather("Type","Salary", `Base Salary`:`Expected Salary`)
+kyle_df$Salary <- format(kyle_df$Salary, scientific=FALSE)
+
+# Defining some friendly names
+names(kyle_df) <- c("ID","Position","Company","City","State","Skills","Type","Salary")
+```
+
+## Final table
+
+The below is our final table, this table represents a total of `r nskills` skills contained in our file.
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+my.skills.data <- kyle_df
+htmlTable(head(my.skills.data), rnames=FALSE)
+```
+
+# Analysis
+
+## Skills
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+# To standarize reporting
+top <- 10
+bottom <- 10
+
+# Skills only data frame
+skills_only_df <- skills_only_df
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+unique_skills <- data.frame(unique(skills_only_df$skill), stringsAsFactors = FALSE)
+nUnique_skills <- dim(unique_skills)[1]
+```
+
+From our gathered data we have a total of `r nUnique_skills` unique skills. The list of unique skills required on these job postings are as follows:
+
+```{r,  echo=FALSE, warning=FALSE, error=FALSE, message=FALSE }
+# Procedure to Find Group Values for the skills
+group_skills <- skills_only_df %>% count(skill)
+total_n_skills <- sum(group_skills$n)
+group_skills$Percent <- paste(round((group_skills$n / total_n_skills)*100,2),"%")
+group_skills <- group_skills %>% arrange(desc(n))
+group_skills$Rank <- round(rank(-group_skills$n),0)
+names(group_skills) <- c("Skills","Count", "Percentage", "Rank")
+```
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+htmlTable(group_skills, rnames=FALSE)
+```
+
+#### Top `r top` Skills
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+library(plotly)
+plotly("mydvtech", "8hb5VQbM9dbhXuHS5IGl")
+
+subset_SkillsTop10 <- subset(group_skills, Rank <= top)
+
+p <- plot_ly(data = subset_SkillsTop10, x = ~Skills, y = ~Count, text = ~paste("Percentage:", Percentage), type = 'bar') %>%
+  layout(xaxis = list(title = "", tickangle = -45),
+         yaxis = list(title = ""),
+         margin = list(b = 100)) %>%
+  layout(showlegend = FALSE, 
+         title = "Top skills", 
+         autosize = F, width = 800, height = 500
+         )
+
+ggplotly(p)
+```
+
+
+
+## Salary
+
