@@ -86,7 +86,7 @@ As a team, we had a brainstorm meetup in which some roles and lines of work were
 
 ### GitHub
 
-We have agreed to create a **GitHub** repository and it's name will be representative; hence we have created **D607-Group-Project** and all of our team members have been grated access and instructed to post and read from a single repository location.
+We have agreed to create a **GitHub** repository and it's name will be representative; hence we have created **D607-Group-Project** and all of our team members have been granted access and instructed to post and read from a single repository location.
 
 https://github.com/kylegilde/D607-Group-Project
 
@@ -254,7 +254,7 @@ lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
 For analysis and testing, we were encouraged to read from our MySQL instead of GitHub (basically GitHub was our backup plan is we had problems with MySQL).
 
-One of the advantages of using a remote MySQL is the speed in terms of reading and transfering data, we noticed an increadible amount of resources employed when reading from our GitHub repository versus reading from MySQL. And also if we locate extra data, we will avoid having localized data sets on each one of our team memebers local workbench.
+One of the advantages of using a remote MySQL is the speed in terms of reading and transfering data, we noticed an increadible amount of resources employed when reading from our GitHub repository versus reading from MySQL. And also if we locate extra data, we will avoid having localized data sets on each one of our team members local workbench.
 
 The below code will connect to our remote MySQL server and read the previous data frame in a raw form from our table.
 
@@ -441,7 +441,7 @@ p <- plot_ly(data = subset_SkillsTop10, x = ~Skills, y = ~Count, text = ~paste("
          yaxis = list(title = ""),
          margin = list(b = 100)) %>%
   layout(showlegend = FALSE, 
-         title = "Top skills", 
+         title = paste("Top ", top, " skills"), 
          autosize = F, width = 800, height = 500
          )
 
@@ -451,4 +451,30 @@ ggplotly(p)
 
 
 ## Salary
+
+Possible: Heat maps (Ambra)
+
+Jobs, Skills by region (in a map)
+
+Highest salary?
+
+Who's paying most?
+
+Most well paid Skills?
+
+Combination of 6 skills that gets the most compensation?
+
+Companies with most open positions with top skills?
+
+
+
+## Company
+
+## State
+
+## City
+
+# Conclusion
+
+## Summary
 
