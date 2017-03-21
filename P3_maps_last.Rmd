@@ -1,0 +1,266 @@
+---
+title: "Mapping_P3"
+author: "Ambra"
+date: "March 21, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r P3}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+# Create vector with all needed libraries
+load_packages <- c("knitr", "RMySQL","tidyverse", "htmlTable", "stringr", "prettydoc", "janitor")
+
+# Check to see if wee need a library in order to to install it
+new.pkg <- load_packages[!(load_packages %in% installed.packages()[, "Package"])]
+if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE, warn.conflicts = FALSE)
+
+# Library
+sapply(load_packages, library, character.only = TRUE, quietly = TRUE)
+#CODE SOURCE DOCUMENTATION: https://gist.github.com/stevenworthington/3178163
+
+url <- "https://raw.githubusercontent.com/dilipganesan/D607-Group-Project/patch-1/scripts/paysa.txt"
+mystring = read_file(url, locale=default_locale())
+
+writeLines(str_sub(mystring, 1, 800))
+
+applyposition=str_extract_all(mystring,".*?APPLY NOW\\n(.*?).*",simplify = TRUE)
+applyposition=as.character(t(applyposition))
+applyposition=data.frame(applyposition, stringsAsFactors = FALSE)
+
+
+Base=str_extract_all(mystring,".*?Base Salary(.*?).*",simplify = TRUE)
+Base=as.character(t(Base))
+Base=data.frame(Base, stringsAsFactors = FALSE)
+
+Annual=str_extract_all(mystring,".*?Annual Bonus(.*?).*",simplify = TRUE)
+Annual=as.character(t(Annual))
+Annual=data.frame(Annual, stringsAsFactors = FALSE)
+
+
+signing=str_extract_all(mystring,".*?Signing Bonus(.*?).*",simplify = TRUE)
+signing=as.character(t(signing))
+signing=data.frame(signing, stringsAsFactors = FALSE)
+
+
+skillset=str_extract_all(mystring,".*?You can learn valuable new skills like:(.*?).*",simplify = TRUE)
+skillset=as.character(t(skillset))
+skillset=data.frame(skillset, stringsAsFactors = FALSE)
+
+
+expected=str_extract_all(mystring,".*?EXPECTED\\n(.*?).*",simplify = TRUE)
+expected=as.character(t(expected))
+expected=data.frame(expected, stringsAsFactors = FALSE)
+
+
+location=str_extract_all(mystring,"Jobs in(.*?).*",simplify = TRUE)
+location=as.character(t(location))
+location=data.frame(location, stringsAsFactors = FALSE)
+
+ID <- 1:nrow(applyposition)
+
+dilips.data.frame <- data.frame(ID, applyposition, Base, Annual, signing, expected, skillset, location)
+
+row.names(dilips.data.frame) <- NULL
+
+# Read password and user name from remote location in order to establish connection to MySQL
+url <- "http://mydvtech.com/libraries/mysql.csv"
+MySQLConnect <- read.csv(url, header = FALSE, sep = ",", stringsAsFactors=FALSE)
+
+# Remote access definitions
+myLocalPassword <- MySQLConnect$V1
+myLocalUser <- MySQLConnect$V2
+myLocalHost <- 'mydvtech.com'
+myLocalMySQLSchema <- 'mydvtech_cuny'
+myLocalTableName <- 'tbl_paysatxt'
+
+# Assigning previous data frame
+my.data <- dilips.data.frame
+
+# Creating a scheme if it doesn't exist by employing RMySQL() in R
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost)
+MySQLcode <- paste0("CREATE SCHEMA IF NOT EXISTS ",myLocalMySQLSchema,";",sep="")
+dbSendQuery(mydbconnection, MySQLcode)
+
+# Write our data frame into MySQL
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+myLocalTableName <- tolower(myLocalTableName)
+MySQLcode <- paste0("DROP TABLE IF EXISTS ",myLocalTableName,";",sep="")
+dbSendQuery(mydbconnection, MySQLcode)
+dbWriteTable(mydbconnection, name= myLocalTableName , value= my.data) 
+
+# Closing connection with local Schema
+dbDisconnect(mydbconnection)
+
+# Close all other open connections we might have
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+
+# Creating a scheme if it doesn't exist by employing RMySQL() in R
+mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+
+# Check to see if our table exists? and if the table does not exist,  then we need to write our data frame into MySQL
+myLocalTableName <- tolower(myLocalTableName)
+if (dbExistsTable(mydbconnection, name = myLocalTableName)  == TRUE){
+  my.data <- dbReadTable(mydbconnection, name = myLocalTableName)
+
+} else {
+  print("Error, the table does not exist")
+}
+
+# Closing connection with local Schema
+dbDisconnect(mydbconnection)
+
+#To close all open connections
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+skillsetdf<- my.data
+
+# Working with Skillset column by removing extra text
+skillsetdf[,7]<- sapply (skillsetdf[,7], function(x) str_trim(str_replace_all(x, "(^.*:)|(and more)|[[.]]$", "")))
+
+# Break down skillset into multiple columns
+maxcol<- max(sapply(strsplit(as.character(skillsetdf$skillset),','),length))
+skillsetdf<- skillsetdf %>%  separate(skillset,paste0("Skill",1:maxcol), sep=",")
+
+# Clean up salary and bonus columns 
+extractsalary<- function(x) {
+str_extract_all(strsplit(x, "[$]"), "[[:digit:]]*K")}
+
+for (i in 1:nrow(skillsetdf)){
+        skillsetdf$Base[i]<-extractsalary(skillsetdf$Base[[i]])
+        skillsetdf$Annual[i]<- extractsalary(skillsetdf$Annual[[i]])
+        skillsetdf$signing[i]<- extractsalary(skillsetdf$signing[[i]])
+        skillsetdf$expected[i]<- extractsalary(skillsetdf$expected[[i]])
+}
+
+# Clean up position
+skillsetdf[,2]<- str_trim(str_replace_all(skillsetdf[,2], "APPLY NOW\n",""))
+
+# Clean up location column
+skillsetdf[,ncol(skillsetdf)]<- sapply (skillsetdf[,ncol(skillsetdf)], function(x) str_trim(str_replace_all(x, "Jobs in", "")))
+
+htmlTable(head(skillsetdf), rnames=FALSE)
+
+kyle_df <- skillsetdf
+
+# Normalize column names
+kyle_df <- kyle_df %>% 
+  clean_names() %>% 
+  rename(position = applyposition, 
+         `Base Salary` = base, 
+         `Annual Salary` = annual, 
+         `Signing Salary` = signing,
+         `Expected Salary` = expected
+         )
+
+#tidy & create position & company columns
+kyle_df <- separate(kyle_df, position, c("position", "company"), sep = " at ")
+kyle_df <- separate(kyle_df, company, c("company"), sep = " in ")
+
+# clean up the dollar variables
+clean_dollars <- function(strings){
+  strings %>% 
+    str_replace("K", "000") %>%
+    str_replace("character(0)", "") %>% 
+    as.numeric() %>%
+    return()
+}
+
+kyle_df <- kyle_df %>% 
+  mutate(
+    `Base Salary`= clean_dollars(`Base Salary`),
+    `Annual Salary` = clean_dollars(`Annual Salary`),
+    `Signing Salary` = clean_dollars(`Signing Salary`),
+    `Expected Salary` = clean_dollars(`Expected Salary`)
+  )
+
+# Gather the skills into one column & clean them
+kyle_df <- kyle_df %>% 
+  gather(skill_num, skill, skill1:skill6) %>% 
+  filter(!is.na(skill)) %>% 
+  select(-skill_num) %>% 
+  mutate(skill = str_replace(skill,"(.+like: | and more.|and )", "")) %>% 
+  mutate(skill = str_replace(skill,"\\.", "")) 
+
+#separate location into city and state
+kyle_df <- kyle_df %>% 
+  separate(location, c("city", "state"), sep = ", ") %>% 
+  mutate(state = ifelse(city == "Palo Alto","CA",state))
+
+# Keep skills into one individual data frame
+skills_only_df <- kyle_df
+
+# Obtaining the number of skills
+nskills <- dim(kyle_df)[1]
+
+# Creating one single column for Salary
+kyle_df <- kyle_df %>% gather("Type","Salary", `Base Salary`:`Expected Salary`)
+kyle_df$Salary <- format(kyle_df$Salary, scientific=FALSE)
+
+# Defining some friendly names
+names(kyle_df) <- c("ID","Position","Company","City","State","Skills","Type","Salary")
+
+my.skills.data <- kyle_df
+htmlTable(head(my.skills.data), rnames=FALSE)
+
+###Creating two interactive maps: states by mean salary, state by number of jobs
+
+library(plotly)
+
+###Create df grouping by state- mutate count of jobs and mean salary
+
+library(tidyverse)
+
+my.skills.data.map1<- my.skills.data %>% group_by(State) %>% summarise (tot_positions= n_distinct(ID))
+
+my.skills.data.map1$hover <- with(my.skills.data.map1, paste(State, '<br>', "Tot open positions", tot_positions))
+# give state boundaries a white border
+l <- list(color = toRGB("white"), width = 2)
+# specify some map projection/options
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+
+p <- plot_geo(my.skills.data.map1, locationmode = 'USA-states') %>%
+  add_trace(
+    z = ~tot_positions, text = ~hover, locations = ~State,
+    color = ~tot_positions, colors = 'Reds'
+  ) %>%
+  colorbar(title = "Num of positions") %>%
+  layout(
+    title = 'Open Data Scientist Positions by State<br>(Hover for breakdown)',
+    geo = g
+  )
+
+# Create a shareable link to chart
+
+Sys.setenv("plotly_username"="data607g3")
+Sys.setenv("plotly_api_key"="dDZhymyplVxhzUuXv2MX")
+chart_link = plotly_POST(p, filename="choropleth")
+chart_link
+
+
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
