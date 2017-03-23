@@ -65,11 +65,11 @@ Duubar Villalobos Jimenez    | Team 3            | mydvtech@gmail.com
 ## Library definitions
 
 
-```{r library_definitions, warning=FALSE, error=FALSE, cache=FALSE, results='hide', message=FALSE}
+```{r library_definitions, echo=FALSE, warning=FALSE, error=FALSE, cache=FALSE, results='hide', message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 # Create vector with all needed libraries
-load_packages <- c("knitr", "RMySQL","tidyverse", "htmlTable", "stringr", "prettydoc", "janitor")
+load_packages <- c("knitr", "RMySQL","tidyverse", "tidyr", "dplyr", "stringr", "plotly", "htmlTable", "stringr", "prettydoc", "shinythemes", "treemap", "data.tree", "janitor")
 
 # Check to see if wee need a library in order to to install it
 new.pkg <- load_packages[!(load_packages %in% installed.packages()[, "Package"])]
@@ -79,6 +79,14 @@ if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE, warn.conflic
 sapply(load_packages, library, character.only = TRUE, quietly = TRUE)
 #CODE SOURCE DOCUMENTATION: https://gist.github.com/stevenworthington/3178163
 ```
+
+```{r plotly_setup, echo=FALSE,  warning=FALSE, error=FALSE, cache=FALSE, results='hide', message=FALSE}
+plotly("mydvtech", "8hb5VQbM9dbhXuHS5IGl")
+
+Sys.setenv("plotly_username"="data607g3")
+Sys.setenv("plotly_api_key"="dDZhymyplVxhzUuXv2MX")
+```
+
 
 As a team, we had a brainstorm meetup in which some roles and lines of work were defined, here are the most important agreements.
 
@@ -127,7 +135,6 @@ Once we had our **paysa.txt** file with our desired information, we proceeded to
 The below code is able to read and webscrape our paysa.txt text file from our GitHub repository.
 
 ```{r Dilip_Webscrape, warning=FALSE, error=FALSE, message=FALSE}
-
 url <- "https://raw.githubusercontent.com/dilipganesan/D607-Group-Project/patch-1/scripts/paysa.txt"
 mystring = read_file(url, locale=default_locale())
 ```
@@ -223,7 +230,7 @@ The below code will connect to our remote MySQL server and write the previous da
 # Assigning previous data frame
 my.data <- dilips.data.frame
 
-# Creating a scheme if it doesn't exist by employing RMySQL() in R
+# Creating a schema if it doesn't exist by employing RMySQL() in R
 mydbconnection <- dbConnect(MySQL(), 
                   user = myLocalUser,
                   password = myLocalPassword,
@@ -259,14 +266,14 @@ One of the advantages of using a remote MySQL is the speed in terms of reading a
 The below code will connect to our remote MySQL server and read the previous data frame in a raw form from our table.
 
 ```{r Duubar_MySQL_Read, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
-# Creating a scheme if it doesn't exist by employing RMySQL() in R
+# Connecting to a schema by employing RMySQL() in R
 mydbconnection <- dbConnect(MySQL(), 
                   user = myLocalUser,
                   password = myLocalPassword,
                   host = myLocalHost,
                   dbname = myLocalMySQLSchema)
 
-# Check to see if our table exists? and if the table does not exist,  then we need to write our data frame into MySQL
+# Check to see if our table exists? and rea our data
 myLocalTableName <- tolower(myLocalTableName)
 if (dbExistsTable(mydbconnection, name = myLocalTableName)  == TRUE){
   my.data <- dbReadTable(mydbconnection, name = myLocalTableName)
@@ -425,24 +432,22 @@ names(group_skills) <- c("Skills","Count", "Percentage", "Rank")
 ```
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
-htmlTable(group_skills, rnames=FALSE)
+kable(group_skills, rnames=FALSE, caption = "Table: Data Science Frequency Skills Ranked")
 ```
 
-#### Top `r top` Skills
+#### Top `r top` most desired skills
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
-library(plotly)
-plotly("mydvtech", "8hb5VQbM9dbhXuHS5IGl")
 
 subset_SkillsTop10 <- subset(group_skills, Rank <= top)
 
 p <- plot_ly(data = subset_SkillsTop10, x = ~Skills, y = ~Count, text = ~paste("Percentage:", Percentage), type = 'bar') %>%
-  layout(xaxis = list(title = "", tickangle = -45),
+  layout(xaxis = list(title = ""),
          yaxis = list(title = ""),
          margin = list(b = 100)) %>%
   layout(showlegend = FALSE, 
-         title = paste("Top ", top, " skills"), 
-         autosize = F, width = 800, height = 500
+         title = paste("Top ", top, " most desired skills"), 
+         autosize = F, width = 750, height = 500
          )
 
 ggplotly(p)
@@ -452,6 +457,180 @@ ggplotly(p)
 
 ## Salary
 
+From our data, we will be analizing a few interesting values. These values are related to salary, and here are some findings from our data.
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+raghu.data.analysis <- my.skills.data
+raghu.data.analysis$Salary <- as.numeric(raghu.data.analysis$Salary)
+```
+
+### Expected Salary
+
+```{r Raghu_Analysis1, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+g1 <- subset(raghu.data.analysis, select=c(-ID, -Skills), Type == "Expected Salary")
+g1 <- unique(g1)
+g1$Rank <- round(rank(-g1$Salary),0)
+g1 <- g1 %>% arrange(Rank)
+g1$Rank <- 1:dim(g1)[1]
+g1 <- head(subset(g1, Rank <= top), top)
+g1$Company[is.na(g1$Company)] <- "Unknown"
+```
+
+**Table**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Expected Salaries"))
+```
+
+**Chart**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~paste("Position:", Position), type = 'bar') %>%
+  layout(xaxis = list(title = ""),
+         yaxis = list(title = ""),
+         margin = list(b = 120, r = 45)) %>%
+  layout(showlegend = FALSE, 
+         title = paste("Top ", top, " Expected Salaries"), 
+         autosize = F, width = 750, height = 500
+         )
+
+ggplotly(p)
+```
+
+
+### Signing Bonus
+
+```{r Raghu_Analysis2, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+g1 <- subset(raghu.data.analysis, select=c(-ID, -Skills), Type == "Signing Salary")
+g1 <- unique(g1)
+g1$Rank <- round(rank(-g1$Salary),0)
+g1 <- g1 %>% arrange(Rank)
+g1$Rank <- 1:dim(g1)[1]
+g1 <- head(subset(g1, Rank <= top), top)
+g1$Company[is.na(g1$Company)] <- "Unknown"
+```
+
+**Table**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Signing Salaries"))
+```
+
+**Chart**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~paste("Position:", Position), type = 'bar') %>%
+  layout(xaxis = list(title = ""),
+         yaxis = list(title = ""),
+         margin = list(b = 120, r = 45)) %>%
+  layout(showlegend = FALSE, 
+         title = paste("Top ", top, " Signing Salaries"), 
+         autosize = F, width = 750, height = 500
+         )
+
+ggplotly(p)
+```
+
+### Annual Salary
+
+```{r Raghu_Analysis3, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+g1 <- subset(raghu.data.analysis, select=c(-ID, -Skills), Type == "Annual Salary")
+g1 <- unique(g1)
+g1$Rank <- round(rank(-g1$Salary),0)
+g1 <- g1 %>% arrange(Rank)
+g1$Rank <- 1:dim(g1)[1]
+g1 <- head(subset(g1, Rank <= top), top)
+g1$Company[is.na(g1$Company)] <- "Unknown"
+```
+
+**Table**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Annual Salaries"))
+```
+
+**Chart**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~paste("Position:", Position), type = 'bar') %>%
+  layout(xaxis = list(title = ""),
+         yaxis = list(title = ""),
+         margin = list(b = 120, r = 45)) %>%
+  layout(showlegend = FALSE, 
+         title = paste("Top ", top, " Annual Salaries"), 
+         autosize = F, width = 750, height = 500
+         )
+
+ggplotly(p)
+```
+
+
+### Base Salary
+
+```{r Raghu_Analysis4, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+g1 <- subset(raghu.data.analysis, select=c(-ID, -Skills), Type == "Base Salary")
+g1 <- unique(g1)
+g1$Rank <- round(rank(-g1$Salary),0)
+g1 <- g1 %>% arrange(Rank)
+g1$Rank <- 1:dim(g1)[1]
+g1 <- head(subset(g1, Rank <= top), top)
+g1$Company[is.na(g1$Company)] <- "Unknown"
+```
+
+**Table**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Base Salaries"))
+```
+
+**Chart**
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~paste("Position:", Position), type = 'bar') %>%
+  layout(xaxis = list(title = ""),
+         yaxis = list(title = ""),
+         margin = list(b = 120, r = 45)) %>%
+  layout(showlegend = FALSE, 
+         title = paste("Top ", top, " Base Salaries"), 
+         autosize = F, width = 750, height = 500
+         )
+
+ggplotly(p)
+```
+
+
+
+## Tree Analysis
+
+```{r Raghu_Tree, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+#f <- read.csv("https://raw.githubusercontent.com/kylegilde/D607-Group-Project/master/tidyPaysa.csv")
+#df <- data.frame(f)
+
+df <- my.skills.data
+df$Salary <- as.numeric(as.character(df$Salary)) 
+df<- df %>%
+     select(Position,Company,State,City,Skills,Type,Salary) %>%
+       filter(Salary >=200000 )  %>%
+         filter( Type == "Base Salary")
+#str(df)
+#head(df)
+df$pathString <- paste("Skills with Salary > 200k", 
+                            df$State,
+                            df$City,
+                            df$Company,
+                            df$Position, 
+                            df$Salary, 
+                            str_trim(df$Skills),
+                            sep = "/")
+pop <- as.Node(df)
+#Prune(pop, pruneFun = function(x) !x$isLeaf || x$Type == "Base Salary")
+print(pop,  limit = 150)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+*****************************
 Possible: Heat maps (Ambra)
 
 Jobs, Skills by region (in a map)
@@ -467,6 +646,7 @@ Combination of 6 skills that gets the most compensation?
 Companies with most open positions with top skills?
 
 
+*****************************
 
 ## Company
 
@@ -477,4 +657,10 @@ Companies with most open positions with top skills?
 # Conclusion
 
 ## Summary
+
+
+
+
+
+
 
