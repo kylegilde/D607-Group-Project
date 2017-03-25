@@ -1,0 +1,73 @@
+"","str_trim(skill)","Count"
+"1","Machine Learning",260
+"2","Data Science",207
+"3","Algorithms",183
+"4","Hadoop",182
+"5","Big Data",177
+"6","Python",123
+"7","Data Mining",119
+"8","Optimization",97
+"9","Analytics",85
+"10","C++",71
+"11","Management",61
+"12","SQL",56
+"13","Statistics",53
+"14","Matlab",40
+"15","Scala",38
+"16","Product Management",33
+"17","MapReduce",31
+"18","Strategy",27
+"19","Architectures",22
+"20","Technical Leadership",19
+"21","Deep Learning",18
+"22","Distributed Systems",18
+"23","Information Retrieval",18
+"24","AWS",17
+"25","ETL",16
+"26","Relational Databases",15
+"27","User Experience",14
+"28","Windows",14
+"29","Java",13
+"30","Ruby",13
+"31","Scalability",13
+"32","REST",11
+"33","Computer Vision",10
+"34","Leadership",10
+"35","Software Design",10
+"36","Apache Spark",8
+"37","Databases",8
+"38","C",7
+"39","Search",7
+"40","Time Series Analysis",7
+"41","Architecture",6
+"42","Automation",6
+"43","Natural Language Processing",6
+"44","PHP",6
+"45","Android",5
+"46","Game Development",5
+"47","OS X",5
+"48","Mathematics",4
+"49","Scripting",4
+"50","Business Intelligence",3
+"51","Cassandra",3
+"52","Functional Programming",3
+"53","Go",3
+"54","MySQL",3
+"55","Enterprise Software",2
+"56","Image Processing",2
+"57","LAMP",2
+"58","Recommender Systems",2
+"59","Signal Processing",2
+"60","Tomcat",2
+"61","Algorithm Design",1
+"62","Data Science Scripting",1
+"63","EMPTY",1
+"64","Engineering Management",1
+"65","Firewalls",1
+"66","HTTP",1
+"67","Mathematical Modeling",1
+"68","Network Architecture",1
+"69","Optimization Data Science",1
+"70","Product Design Data Science",1
+"71","Test Driven Development",1
+"72","Web Services",1
