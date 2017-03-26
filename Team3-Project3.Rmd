@@ -1,12 +1,14 @@
 ---
 title: "Project - Data Science Skills"
 author: "Ambra, Dilip, Kyle, Pavan, Raghu, Tom, Duubar"
-date: "March 20, 2017"
+date: "March 26, 2017"
 output:
   prettydoc::html_pretty:
-    theme: leonids
     highlight: github
+    theme: leonids
     toc: yes
+  pdf_document: default
+  html_document: default
 subtitle: CUNY MSDA DATA 607 Project 3
 ---
 
@@ -19,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction  
 
-This challenging project for DATA607 focuses on the team building, collaboration and leadership required to succeed in the field of data science and analytics. We are instructed to work closely in groups toward the task of answering a specific question: **"Which are the most valued data science skills?"** Our team quickly established a rapport and communications channel on #slack and set to the task with gusto and shared responsibility. We chose as our leader Duubar Villalobos Jimenez, and under his coordination we assigned the variety of tasks. Of course, data is required. We chose to collect data from the website Paysa, which lists a wide variety of tech postings, the skills associated with each posting and several salary components. Details follow, but our analysis shows the Machine Learning is the skill that was most-requested in our sample of 390 job listings, while the highest-valued skill measured by mean compensation was Strategy - reflecting the higher pay offered for management, leadership and vision in this rapidly evolving profession.
+This challenging project for DATA607 focuses on the team building, collaboration and leadership required to succeed in the field of data science and analytics. We are instructed to work closely in groups toward the task of answering a specific question: **"Which are the most valued data science skills?"** Our team quickly established a rapport and communications channel on #slack then set to the task with gusto and shared responsibility. We chose as our leader Duubar Villalobos Jimenez, and under his coordination we assigned a variety of tasks and deadlines to accomplish our goal. Of course, data is required. We chose to collect Data Science salary data from the website Paysa, which lists a wide variety of tech postings, the skills associated with each posting and several salary components. Details follow, but our analysis shows the Machine Learning is the most-requested skill in our sample of 390 job listings, while the highest-valued skill, measured by mean compensation, was Strategy - reflecting the higher pay for management, leadership and vision in this rapidly evolving profession.
 
 
 # Team members
@@ -58,7 +60,8 @@ Create vector with all needed libraries.
                     "data.tree",
                     "janitor",
                     "ggplot2",
-                    "ggthemes"
+                    "ggthemes",
+                    "stats"
                   )
 
 ```
@@ -85,7 +88,7 @@ Sys.setenv("plotly_api_key"="dDZhymyplVxhzUuXv2MX")
 
 ## Organization and Communication
 
-As a team, we had a brainstorm meetup in which some roles and lines of work were defined, here are the most important agreements.
+As a team, we had a brainstorm meetup in which some roles and lines of work were defined. Following are the most important agreements.
 
 ### Github
 
@@ -95,7 +98,7 @@ https://github.com/kylegilde/D607-Group-Project
 
 ### Slack
 
-We agreed to use **Slack** as our Team Collaboration platform. From Slack we were able to perform live meetups by using "join.me" permitting screen sharing, this allowing some presentations in order to get updated in some specific topics.
+We agreed to use **Slack** as our Team Collaboration platform. From Slack we were able to perform live meetups with "join.me", which allows screen sharing and presentations to update and explore specific topics and problems. For example, we were able to look at code and discuss problems and refinements.
 
 https://cuny-data607.slack.com
 
@@ -107,21 +110,21 @@ https://docs.google.com/spreadsheets/d/1QNhmk6ebuFKYiyqrWJewhzT-PnrYgntZ09MC3yqp
 
 ## Data
 
-After some preliminary research and analysis, we decided to collect data from current data science job postings. We identified several web sites that offered raw information on position, location, company, salary and skills but in the end selected **Paysa** (https://www.paysa.com) because it offered the most comprehesive set of variables.
+After some preliminary research and analysis, we decided to collect data from current data science job postings. We identified several web sites that offered raw information on position, location, company, salary and skills. In the end selected **Paysa** (https://www.paysa.com) because it offered the most comprehesive set of variables.
 
 ## Limitations 
 
-Please note that this data has been collected from a single source and it relates to current job postings. No assumption should be made for past or future data science skills or any other conclusion we might end up for this project. A different sample from the same source will likely produce different results.
+Please note that this data has been collected from a single source and relates to job postings extant on March 14, 2017. No assumption should be made for past or future data science skills or any other conclusion we might end up for this project. A different sample from the same source will likely produce different results.
 
 ## Collection
 
-We were unable to find data in a table, csv file or other structured format. In addition, the Paysa proprietors declined our request to provide sample data for the project. We attempted to scrape the data, but Paysa has designed its web pages to prevent scraping. Because we did not require a huge sample of data for this process, we cut and pasted Paysa data into a text file that we then cleaned, organized and refined. We imported that raw text data into a SQL database for permanent storage, then exported it to R to conduct our analysys. The import-export process also was conducted via R. In total, we collected 390 job postings that listed 72 skills. Because some of those skills were the same but named differently, we collapsed the list into 35 unique skills.
+We were unable to find data in a table, csv file or other structured format. In addition, the Paysa proprietors declined our request to provide sample data for the project. We attempted to scrape the data, but Paysa has designed its web pages to prevent scraping. Because we did not require a huge sample of data for this process, we cut and pasted Paysa data into a text file that we then cleaned, organized and refined. We imported that raw text data into a SQL database for permanent storage, then exported it to R to conduct our analysys. The import-export process also was conducted via R. In total, we collected 390 job postings that listed 95 overall skills. Because some of those skills were the same but named differently, we collapsed the list into 35 unique skills and a miscellaneous group of skills that appeared fewer than 10 times in the data.
 
 We named our raw text file **paysa.txt** and uploaded it to **GitHub**.
 
 ## Data Preparation
 
-Once we had our **paysa.txt** file with our desired information, we proceeded to extract some valuable information from it and created a data frame with the desired information, the code was shared among us in order to continue further cleaning and tidying of the data frame.
+Once we had our **paysa.txt** file with our desired information, we proceeded to extract valuable information from it and created a data frame. The code was shared among us to continue further cleaning and tidying.
 
 ### Import
 
@@ -146,7 +149,7 @@ writeLines(str_sub(mystring, 1, 800))
 
 ### From text file to data frame
 
-This code use string handling to separate the text into an initial set of columns.
+This code uses string handling to separate the text into an initial set of columns.
 
 ```{r Dilip_DataFrame, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -186,6 +189,7 @@ row.names(dilips.data.frame) <- NULL
 
 # Assigning previous data frame
 my.data <- dilips.data.frame
+
 ```
 
 
@@ -199,16 +203,15 @@ kable(head(dilips.data.frame), format = "html", rnames=FALSE)
 
 ## MySQL
 
-Next, we stored this initial table on a remote MySQL server. We provided clear instructions for all team members about how to read tables into R. 
+Next, we stored this initial data set on a remote MySQL server. We provided clear instructions for all team members about how to read tables into R. 
 
 The remote server setup is at **MySQL URL** mydvtech.com. We chose a commercial site because in our day-to-day work we will be reading and storing company data in company portals. This was good practice or all. Step-by-step instructions for connecting using MySQL server and cPanel were created in a manual distributed to the team.
 
 http://rpubs.com/dvillalobos/confMySQLcPanel
 
+
+```{r Duubar_MySQL_Setup, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
 ### MySQL connection setup
-
-```{r}
-
 # Read password and user name from remote location in order to establish connection to MySQL
 
 url <- "http://mydvtech.com/libraries/mysql.csv"
@@ -261,6 +264,7 @@ writeMySQLTable <- function(my.data = NULL, myLocalTableName = NULL){
   # Close all other open connections we might have
   lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 }
+
 ```
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
@@ -305,12 +309,14 @@ readMySQLTable <- function(myLocalTableName = NULL){
 ```
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+
 my.data <- readMySQLTable('tbl_paysatxt')
+
 ```
 
 ## Tidying and transformation
 
-We divided our tidying and transformation into several tasks as follows.
+We divided our tidying and transformation into several tasks as follows..
 
 ```{r Ambra_Expressions, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
 
@@ -418,7 +424,7 @@ names(kyle_df) <- c("ID","Position","Company","City","State","Skills","Type","Sa
 
 ## Tidy table
 
-The below is our tidy table with a total of `r nskills` skills. (In a subsequent step, we collapse repetitive skills (i.e., "C" and "C++'.)
+Below is our tidy table with a total of `r nskills` skills. (In a subsequent step, we collapse repetitive skills (i.e., "C" and "C++".)
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -468,7 +474,7 @@ kable(group_skills, format = "html", rnames=FALSE, caption = "Table: Data Scienc
 
 ```
 
-#### Top `r top` most desired skills by employers, by count of raw skill names.
+Top `r top` most desired skills by employers, by count of raw skill names.
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -483,13 +489,16 @@ p <- plot_ly(data = subset_SkillsTop10, x = ~Count, y = ~Skills, text = ~paste("
          autosize = F, width = 750, height = 500
          )
 
+#chart_link = plotly_POST(p, filename="top10_desired_skills")
+#chart_link
+
 ggplotly(p)
 
 ```
 
 
 
-## Compensation -- Exploratory Analysis
+## Compensation (Exploratory Analysis)
 
 The Paysa data lists Base Salary, Annual Bonus, Signing Bonus and a total called  Expected Salary, providing a way to another way to measure value beyond raw counts.
 
@@ -503,11 +512,11 @@ raghu.data.analysis <- my.skills.data
 
 ```
 
-Another way of Analysing the above data is by performing a tree analysis. This tree shows Expected Salary for jobs associated with Machine Learning skills in Washington and California.
+Another way of Analysing the above data is by performing a tree analysis. This tree shows Total Salary for jobs associated with Machine Learning skills in Washington and California.
 
 Following are the highest-paid jobs in the data.
 
-```{r Raghu_Analysis0, echo=FALSE, warning=FALSE, error=FALSE, cache=FALSE, message=FALSE}
+```{r Raghu_Analysis0, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, cache=FALSE, message=FALSE}
 
 df1 <- filter(subset_SkillsTop10, Rank == 1)
 
@@ -538,7 +547,10 @@ p
 
 ```
 
-### Expected Salary
+![](C:/Users/mydvtech/Documents/GitHub/MSDA/Spring-2017/607/Projects/Project3/Team3Project3Final/TopPaidJobsSalaryTree.png)
+
+
+### Total Salary
 
 ```{r Raghu_Analysis1, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -556,7 +568,7 @@ g1$Company[is.na(g1$Company)] <- "Unknown"
 
 ```{r Raghu_AnalysisT1, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Expected Salaries"))
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Total Salaries"))
 
 ```
 
@@ -569,7 +581,7 @@ p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~pas
          yaxis = list(title = "Salary"),
          margin = list(b = 150, l = 50, r = 70)) %>%
   layout(showlegend = FALSE, 
-         title = paste("Top ", top, " Offered Expected Salaries by Employers"), 
+         title = paste("Top ", top, " Offered Total Salaries by Employers"), 
          autosize = F, width = 750, height = 500
          )
 
@@ -601,16 +613,17 @@ topPaidSkills_ExpectedSalary1$`Listed in top most desired skills by employers` <
 
 ```
 
-The below combination of desired skills by employers will generate the top Expected Salary of \$`r format(topPaidSkills_ExpectedSalary$Salary[1], scientific=FALSE)`. 
+The below combination of desired skills by employers will generate the top Total Salary of \$`r format(topPaidSkills_ExpectedSalary$Salary[1], scientific=FALSE)`. 
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-kable(topPaidSkills_ExpectedSalary1, format = "html", caption = paste("Table: Top paid skills by top paid Expected Salaries"))
+kable(topPaidSkills_ExpectedSalary1, format = "html", caption = paste("Table: Top paid skills by top paid Total Salaries"))
 
 ```
 
+The below tree will present the top two highest-paid salaries and respective skills.
 
-```{r Raghu_Tree1, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+```{r Raghu_Tree1, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #3**Tree Analysis**
 
@@ -670,6 +683,7 @@ p
 
 ```
 
+![](C:/Users/mydvtech/Documents/GitHub/MSDA/Spring-2017/607/Projects/Project3/Team3Project3Final/ExpectedSalaryTree.png)
 
 ### Signing Bonus
 
@@ -689,7 +703,7 @@ g1$Company[is.na(g1$Company)] <- "Unknown"
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Signing Salaries"))
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Signing Bonus"))
 
 ```
 
@@ -702,7 +716,7 @@ p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~pas
          yaxis = list(title = "Salary"),
          margin = list(b = 150, l = 50, r = 70)) %>%
   layout(showlegend = FALSE, 
-         title = paste("Top ", top, " Offered Signing Salaries by Employers"), 
+         title = paste("Top ", top, " Offered Signing Bonus by Employers"), 
          autosize = F, width = 750, height = 500
          )
 
@@ -734,16 +748,17 @@ topPaidSkills_SigningSalary1$`Listed in top most desired skills by employers` <-
 
 ```
 
-The below combination of desired skills by employers will generate the top Signing Salary of \$`r format(topPaidSkills_SigningSalary$Salary[1], scientific=FALSE)`.  
+The below combination of desired skills by employers will generate the top Signing Bonus of \$`r format(topPaidSkills_SigningSalary$Salary[1], scientific=FALSE)`.  
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-kable(topPaidSkills_SigningSalary1, format = "html", caption = paste("Table: Top paid skills by top paid Signing Salaries"))
+kable(topPaidSkills_SigningSalary1, format = "html", caption = paste("Table: Top paid skills by top paid Signing Bonus"))
 
 ```
 
+The below tree will present the top two highest-paid signing bonus and respective skills.
 
-```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+```{r, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 # **Tree Analysis**
 
@@ -803,8 +818,9 @@ p
 
 ```
 
+![](C:/Users/mydvtech/Documents/GitHub/MSDA/Spring-2017/607/Projects/Project3/Team3Project3Final/SigningSalaryTree.png)
 
-### Annual Salary
+### Annual Bonus
 
 ```{r Raghu_Analysis3, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -822,7 +838,7 @@ g1$Company[is.na(g1$Company)] <- "Unknown"
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Annual Salaries"))
+kable(g1, format = "html", caption = paste("Table: Companies and job offerings with the top ", top, " Annual Bonus"))
 
 ```
 
@@ -835,7 +851,7 @@ p <- plot_ly(data = g1, x = ~paste(Company, "#", Rank), y = ~Salary, text = ~pas
          yaxis = list(title = "Salary"),
          margin = list(b = 150, l = 50, r = 70)) %>%
   layout(showlegend = FALSE, 
-         title = paste("Top ", top, " Offered Annual Salaries by Employers"), 
+         title = paste("Top ", top, " Offered Annual Bonus by Employers"), 
          autosize = F, width = 750, height = 500
          )
 
@@ -866,16 +882,17 @@ topPaidSkills_AnnualSalary1$`Listed in top most desired skills by employers` <- 
 
 ```
 
-The below combination of desired skills by employers will generate the top Annual Salary of \$`r format(topPaidSkills_AnnualSalary$Salary[1], scientific=FALSE)`. 
+The below combination of desired skills by employers will generate the top Annual Bonus of \$`r format(topPaidSkills_AnnualSalary$Salary[1], scientific=FALSE)`.  
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
-kable(topPaidSkills_AnnualSalary1, format = "html", caption = paste("Table: Top paid skills by top paid Annual Salaries"))
+kable(topPaidSkills_AnnualSalary1, format = "html", caption = paste("Table: Top paid skills by top paid Annual Bonus"))
 
 ```
 
+The below tree will present the top two highest paid salaries and respective skills.
 
-```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+```{r, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 # **Tree Analysis**
 
@@ -933,6 +950,8 @@ p <- plot(pop, quartz(width=800, height=300), cex =10)
 p
 
 ```
+
+![](C:/Users/mydvtech/Documents/GitHub/MSDA/Spring-2017/607/Projects/Project3/Team3Project3Final/AnnualSalaryTree.png)
 
 ### Base Salary
 
@@ -996,7 +1015,7 @@ topPaidSkills_BaseSalary1$`Listed in top most desired skills by employers` <- to
 
 ```
 
-The below combination of desired skills by employers will generate the top Base Salary of \$`r format(topPaidSkills_BaseSalary$Salary[1], scientific=FALSE)`. 
+The below combination of desired skills by employers will generate the top Base Salary of \$`r format(topPaidSkills_BaseSalary$Salary[1], scientific=FALSE)`.  
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -1004,7 +1023,9 @@ kable(topPaidSkills_BaseSalary1, format = "html", caption = paste("Table: Top pa
 
 ```
 
-```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+The below tree will present the top two highest-paid base salaries and respective skills.
+
+```{r, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 #**Tree Analysis**
 
@@ -1063,15 +1084,18 @@ p
 
 ```
 
+![](C:/Users/mydvtech/Documents/GitHub/MSDA/Spring-2017/607/Projects/Project3/Team3Project3Final/BaseSalaryTree.png)
+
 ### Combined Table of Top paid Skills
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 topPaidCombined <- data.frame(Rank = subset_SkillsTop10$Rank, Skills = subset_SkillsTop10$Skills)
 
-names(topPaidSkills_ExpectedSalary1) <- c("Skills", "Expected Salary")
-names(topPaidSkills_SigningSalary1) <- c("Skills", "Signing Salary")
-names(topPaidSkills_AnnualSalary1) <- c("Skills", "Annual Salary")
+# Column Names for combined table of most desired skills with higher income
+names(topPaidSkills_ExpectedSalary1) <- c("Skills", "Total Salary")
+names(topPaidSkills_SigningSalary1) <- c("Skills", "Signing Bonus")
+names(topPaidSkills_AnnualSalary1) <- c("Skills", "Annual Bonus")
 names(topPaidSkills_BaseSalary1) <- c("Skills", "Base Salary")
 
 topPaidCombined$Skills <- trimws(topPaidCombined$Skills)
@@ -1090,7 +1114,7 @@ topPaidCombined[topPaidCombined == FALSE] <- ""
 
 ```
 
-The below table displays a top combination of skills in order to obtain a high demand skills job with high pay.
+The table below displays which skills associate with the highest-paid compensation categories. For example, Data Science, Algorithms and Big Data are associated with the highest Expected (total) Salary. Skills in Machine Learning and Hadoop are associated with the highest Signing Bonuses.
 
 
 ```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
@@ -1099,11 +1123,49 @@ kable(topPaidCombined, format = "html", caption = paste("Table: Top paid skills 
 
 ```
 
-From the above table we can deduct the best combination of skills in order to obtain a high paid job with high demand of top skills.
 
 ## Maps
 
 ### Open Positions by State
+
+```{r Ambra_MapScript, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+###Creating two interactive maps: states by mean salary, state by number of jobs
+
+###Create df grouping by state- mutate count of jobs and mean salary
+
+my.skills.data.map1<- my.skills.data %>% group_by(State) %>% summarise (tot_positions= n_distinct(ID))
+
+my.skills.data.map1$hover <- with(my.skills.data.map1, paste(State, '<br>', "Tot open positions", tot_positions))
+# give state boundaries a white border
+l <- list(color = toRGB("white"), width = 2)
+# specify some map projection/options
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+
+p <- plot_geo(my.skills.data.map1, locationmode = 'USA-states') %>%
+  add_trace(
+    z = ~tot_positions, text = ~hover, locations = ~State,
+    color = ~tot_positions, colors = 'Reds'
+  ) %>%
+  colorbar(title = "Num of positions") %>%
+  layout(
+    title = 'Open Data Scientist Positions by State<br>(Hover for breakdown)',
+    geo = g
+  )
+
+# Create a shareable link to chart
+
+Sys.setenv("plotly_username"="data607g3")
+Sys.setenv("plotly_api_key"="dDZhymyplVxhzUuXv2MX")
+chart_link = plotly_POST(p, filename="choropleth")
+chart_link
+
+```
 
 ```{r Ambra_Map, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -1117,6 +1179,47 @@ plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style
 
 ### Open Positions by City
 
+```{r Dilip_MapScript, eval=FALSE, results='hide', echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# City Mapping Starts
+
+if (!require("ggmap")) install.packages('ggmap')
+library(ggmap)
+
+my.skills.data.city<- my.skills.data %>% group_by(City) %>% summarise (tot_positions= n_distinct(ID))
+
+geocodes <- geocode(as.character(my.skills.data.city$City))
+my.skills.data.city <- data.frame(my.skills.data.city,geocodes)
+
+my.skills.data.city$hover <- with(my.skills.data.city, paste(City, '<br>', "Tot open positions", tot_positions))
+
+g <- list(
+ scope = 'usa',
+ projection = list(type = 'albers usa'),
+ showland = TRUE,
+ landcolor = toRGB("gray85"),
+ subunitwidth = 1,
+ countrywidth = 1,
+ subunitcolor = toRGB("white"),
+ countrycolor = toRGB("white")
+)
+
+p_city <- plot_geo(my.skills.data.city, locationmode = 'USA-states', sizes = c(1, 250)) %>%
+ add_markers(
+   x = ~lon, y = ~lat, size = ~tot_positions, color=~tot_positions, hoverinfo = "text",
+   text = ~paste(my.skills.data.city$City, '<br>', my.skills.data.city$tot_positions)
+ ) %>%
+ layout(title = 'Open Data Scientist Positions by City', geo = g)
+
+
+Sys.setenv("plotly_username"="data607g3")
+Sys.setenv("plotly_api_key"="dDZhymyplVxhzUuXv2MX")
+chart_link = plotly_POST(p_city, filename="choropleth_city")
+chart_link
+
+```
+
+
 ```{r Dilip_Map, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
 url<-"https://plot.ly/~data607g3/2/open-data-scientist-positions-by-city.embed?width=800&height=800" 
@@ -1127,10 +1230,13 @@ plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style
 
 `r I(plotly_iframe)`
 
+## Highest-Valued Skills Measured by Mean Compensation
 
-## Highest-Valued Skills by Mean Compensation
+Some of the highest-valued skills are not the most common skills.  They include Strategy, Leadership, Management and Data Science, a catch-all. ETL -- for Extract, Transfer and Load -- is a critical area of data warehousing.
 
-Some of the highest-valued skills are not the most common technical skills. They include Strategy, Leadership, Management and Data Science, a catch-all. ETL -- for Extract, Transfer and Load -- is a critical area of data warehousing.
+This part of the analysis looks at the value of skills based on what employers pay rather the frequency of skills in a job posting. To do this, we compute a mean value for each skill across the database.
+
+For example, the job 'Principle Lead Data Scientist' at Akamai is associated with six skills: Hadoop, Data Mining, Machine Learning, Python, Matlab and Ruby. The total compensation this job is \$317,000. To value each job, we divide total compensation by 6 to get \$52,833. We do similar computation for skills in each job, then calculate the overall mean of those values across all jobs for each skill. We then plot those values to rank skills in descending order.
 
 
 ```{r Toms_Analysis, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
@@ -1192,9 +1298,51 @@ ggplotly(p)
 
 ```
 
-## Relative Value of Skills in Expected Salary
+## Relative Value of Skills
 
 Using ANOVA, we can compute how much a particular skill adds or subtracts from the mean Expected Salary for Algorithms, the reference level, all other things equal.
+
+For example, the reference mean compensation for Algorithms is $30,323. Having ETL skills adds $9,283 to that mean; Matlab skills are worth $1,282 less.
+
+The chart summarizes the skill values relative to the Algorithm baseline.
+
+
+```{r, echo=F, warning=F, message=F}
+
+library(stats)
+
+# fit ANOVA
+fit <- lm(skill_val ~ new_skill, contrasts = "contr.sum", data = tom_df2)
+
+# get coefficients
+mycoefs <- data.frame(fit$coefficients)
+
+# fix the names
+skillnames <- str_replace_all(rownames(mycoefs), "new_skill", "")
+
+# add names to df
+mycoefs <- cbind(skillnames, mycoefs)
+
+# fix rounding
+mycoefs[,2] <- round(mycoefs[,2],0) 
+
+#add column names
+colnames(mycoefs) <- c("Skill", "Adjustment")
+
+# fix first value
+mycoefs$Skill <- as.character(mycoefs$Skill)
+mycoefs[1,1] <- "Algorithm (reference)"
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+kable(mycoefs, row.names = FALSE, format = "html", caption = paste("Table: Expected Salary for Algorithms"))
+
+```
+
+The below chart, display a salary weight composition for each desired skills by employers.
 
 ```{r Toms_Analysis2, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
 
@@ -1263,45 +1411,11 @@ ggplotly(p)
 
 ```
 
-
-```{r, echo=F, warning=F, message=F}
-
-library(stats)
-
-# fit ANOVA
-fit <- lm(skill_val ~ new_skill.x, contrasts = "contr.sum", data = tom_df2)
-
-# get coefficients
-mycoefs <- data.frame(fit$coefficients)
-
-# fix the names
-skillnames <- str_replace_all(rownames(mycoefs), "new_skill", "")
-
-# add names to df
-mycoefs <- cbind(skillnames, mycoefs)
-
-# fix rounding
-mycoefs[,2] <- round(mycoefs[,2],0) 
-
-#add column names
-colnames(mycoefs) <- c("Skill", "Adjustment")
-
-# fix first value
-mycoefs$Skill <- as.character(mycoefs$Skill)
-mycoefs[1,1] <- "Algorithm (reference)"
-
-```
-
-
-```{r, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
-
-kable(mycoefs, row.names = FALSE, format = "html", caption = paste("Table: Expected Salary for Algorithms"))
-
-```
-
 # Conclusion
+
 We were asked to work as a team to answer the the question: What are the most valued data science skills? Our examination of compensation data for Data Science jobs on the Paysa website looked at "value" in as a function of the frequency of skills advertised and determined that skills such as Machine Learning, Big Data and Algorithms ranked in the top 10. In terms of mean compensation, top skills included expertise in Strategy, ETL, SQL and User Experience. There are many possible ways to value skills; our study suggests that more data and additional refinement of skills into appropriate categories would provide a more confident assessment of the most-valued skills. 
 
 Our experience also shows the benefits of working in a collaborative environment, where team members can readily learn from each other and contribute ideas, creating synergy and improving the results. Teams also benefit from strong leadership that guides while giving team members the opportunity to succeed and sometimes fail, but always reach for improvement and professional growth.
+
 
 
