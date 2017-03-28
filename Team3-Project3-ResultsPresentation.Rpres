@@ -1,0 +1,313 @@
+<style>
+.small-code pre code {
+  font-size: 1em;
+  font-family: Helvatica
+  text-align:center; width:100%;
+  
+}
+</style>
+
+The most valued data science skills!
+========================================================
+title: Team 3 (DATA-607 Project 3)
+author: Team 3
+date: 03/30/2017
+autosize: true
+
+
+
+Introduction
+========================================================
+As part of the course curriculum:
+
+- This project exposes the entire team to a broad array of skills including communications, team building, goal setting, task identification and delegation.
+
+- In a nutshell, this project can be summarized as building project management skills with virtual teams.
+
+
+
+Team 3
+========================================================
+CUNY MSDA
+
+DATA 607
+
+Name                         | Team              | Email
+-----------------------------|-------------------|--------------------------------------
+Pavan Akula                  | Team 3            | akulapavan@hotmail.com
+Ambra  Baboni Alexander      | Team 3            | ambra8due@hotmail.com
+Thomas Detzel                | Team 3            | tomdetz@gmail.com
+Dilip  Ganesan               | Team 3            | dilipgan@gmail.com
+Kyle   Gilde                 | Team 3            | kylegilde@gmail.com
+Raghunathan Rammnath         | Team 3            | raghu74us@gmail.com
+Duubar Villalobos Jimenez    | Team 3            | mydvtech@gmail.com
+
+
+
+Overview
+========================================================
+![](Presentation-Paysa.png)
+
+We have gathered our data from:
+
+https://www.paysa.com/
+
+"Get paid what you deserve!"
+
+
+
+Project - Data Science Skills
+========================================================
+Sample of job listings for "Data Science".
+
+![](Presentation-JobListing.png)
+
+
+
+Project - Data Science Skills
+========================================================
+"Data Science" postings with desired listed skills.
+
+![](Presentation-SkillsListing.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Sample of our Paysa.txt file.
+
+![](Presentation-Paysatxt.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Tidy table
+
+![](Presentation-TidyListing.png)
+
+
+
+Project - Data Science Skills
+========================================================
+**Top 10** most desired skills by Employers.
+
+![](Presentation-Top10MostDesiredSkillsbyEmployers.png)
+ 
+
+
+Project - Data Science Skills
+========================================================
+**Top 10** most desired skills by Employers.
+
+<iframe width='100%' height='700' src='https://plot.ly/~data607g3/34.embed' allowfullscreen='allowfullscreen' frameborder='0'></iframe>
+
+
+
+Project - Data Science Skills
+========================================================
+The **MOST** desired skill by employers
+
+![](TopPaidJobsSalaryTree.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Top 10 **offered** salaries
+
+<iframe width='100%' height='700' src='https://plot.ly/~data607g3/22.embed' allowfullscreen='allowfullscreen' frameborder='0'></iframe>
+
+
+
+Project - Data Science Skills
+========================================================
+Top 10 **signing** bonus
+
+<iframe width='100%' height='700' src='https://plot.ly/~data607g3/24.embed' allowfullscreen='allowfullscreen' frameborder='0'></iframe>
+
+
+
+Project - Data Science Skills
+========================================================
+Top 10 **annual** salaries
+
+<iframe width='100%' height='700' src='https://plot.ly/~data607g3/26.embed' allowfullscreen='allowfullscreen' frameborder='0'></iframe>
+
+
+
+Project - Data Science Skills
+========================================================
+Top 10 **base** salaries
+
+<iframe width='100%' height='700' src='https://plot.ly/~data607g3/28.embed' allowfullscreen='allowfullscreen' frameborder='0'></iframe>
+
+
+
+Project - Data Science Skills
+========================================================
+Top ranked skills vs highest paid
+
+The top 6 skills, represent the best combination for highest salary!
+
+![](TopRankedSkillsvsSalaries.png)
+
+
+
+Project - Data Science Skills
+========================================================
+
+<iframe width='100%' height='900' src='https://plot.ly/~data607g3/6.embed' allowfullscreen='allowfullscreen'  frameborder='0'></iframe>
+
+
+
+Project - Data Science Skills
+========================================================
+
+![](choropleth_city.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Highest-Valued Skills Measured by Mean Compensation
+
+- Some of the highest-valued skills are not the most common skills. They include Strategy, Leadership, Management and Data Science, a catch-all. ETL - for Extract, Transfer and Load - is a critical area of data warehousing.
+
+
+
+Project - Data Science Skills
+========================================================
+Highest-Valued Skills Measured by Mean Compensation
+
+- This part of the analysis looks at the value of skills based on what employers pay rather the frequency of skills in a job posting. To do this, we compute a mean value for each skill across the database.
+
+
+
+Project - Data Science Skills
+========================================================
+Highest-Valued Skills Measured by Mean Compensation
+
+![](Highest-ValuedSkills.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Relative Value of Skills
+
+Using ANOVA
+![](Anova.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Salary weight composition
+
+![](Salary-WeightComposition.png)
+
+
+
+Project - Data Science Skills
+========================================================
+
+![](Arrows.png)
+
+
+
+Project - Data Science Skills
+========================================================
+Big Challenges
+
+- Trust was observed as a critical factor for effective communication in the team.
+
+- Having a clear vision for the team.
+
+- Creating team spirit and team goals.
+
+- Prioritizing the tasks.
+
+
+
+Project - Data Science Skills
+========================================================
+Communications Management
+
+- Face-to-face communication was beneficial.
+
+- Logging what, who and how and frequency.
+
+- Logging origination, nuances.
+
+- Recognizing team members accomplishments.
+
+
+
+Project - Data Science Skills
+========================================================
+Communication Tools
+
+- **Slack** and **What's App**: Social media tool, to communicate with team members.
+
+- **Join Me**: For voice calls and idea presentation.
+
+- **Github**: Code sharing.
+
+- **R Studio**: Primary development tool.
+
+- **MySQL**: RDBMS used to store data in normalized format.
+
+- **Google Spreadsheets**: Monitoring and managing tasks.
+
+
+
+Project - Data Science Skills
+========================================================
+Output
+
+- Remotely, comparable to what we would have got working locally.
+
+- Our team was smart.
+
+- Could think for themselves.
+
+- Innovative and well educated in their tasks.
+
+
+
+Project - Data Science Skills
+========================================================
+Conclusions
+
+- Project: Management Skills
+
+- Virtual Teams versus Face-to-Face Teams.
+
+- Working with geographically distributed professionals.
+
+- Collaborate on a variety of workplace tasks.
+
+- Effectiveness of information exchange.
+
+- Creating trust and Keeping motivated.
+
+
+
+Team
+========================================================
+- Duubar Villalobos: Team leader, coordinating entire team from task identification to delegation.
+- Tom Detzel: Dataset Analyst, major in role in identifying the dataset. Web Scrapping and harvesting raw data.
+- Pavan Akula: Data modeler, MySQL database design.
+- Kyle Glide: Data wrangler, Tidying and Formatting data to store data into MySQL DB.
+- Ambra Barboni-Alexander: Data wrangler, Tidying and Formatting data to store data into MySQL DB.
+- Raghunathan Ramnath: Data wrangler, Tidying and Formatting data to store data into MySQL DB.
+- Dilip Ganesan: Data wrangler, Pattern recognition and producing raw dataset.
+
+
+
+Project - Data Science Skills
+========================================================
+
+![](the-end.png)
+
