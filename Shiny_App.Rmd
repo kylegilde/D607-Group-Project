@@ -1,0 +1,217 @@
+---
+title: "Project - Data Science Skills"
+author: "Ambra, Dilip, Kyle, Pavan, Raghu, Tom, Duubar"
+date: "March 26, 2017"
+output:
+  prettydoc::html_pretty:
+    highlight: github
+    theme: leonids
+    toc: yes
+  pdf_document: default
+  html_document: default
+subtitle: CUNY MSDA DATA 607 Project 3
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R Shiny
+
+
+```{r Duubar_MySQL_Setup, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+### MySQL connection setup
+# Read password and user name from remote location in order to establish connection to MySQL
+
+library(RMySQL)
+url <- "http://mydvtech.com/libraries/mysql.csv"
+MySQLConnect <- read.csv(url, header = FALSE, sep = ",", stringsAsFactors=FALSE)
+
+# Remote access definitions
+myLocalPassword <- MySQLConnect$V1
+myLocalUser <- MySQLConnect$V2
+myLocalHost <- 'mydvtech.com'
+myLocalMySQLSchema <- 'mydvtech_cuny'
+myLocalTableName <- 'NULL'
+
+```
+
+```{r Duubar_MySQL_Read, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+
+readMySQLTable <- function(myLocalTableName = NULL){
+  
+  # Connecting to a schema by employing RMySQL() in R
+  mydbconnection <- dbConnect(MySQL(), 
+                  user = myLocalUser,
+                  password = myLocalPassword,
+                  host = myLocalHost,
+                  dbname = myLocalMySQLSchema)
+
+  # Check to see if our table exists? and read our data
+  myLocalTableName <- tolower(myLocalTableName)
+  if (dbExistsTable(mydbconnection, name = myLocalTableName)  == TRUE){
+    slookup <- dbReadTable(mydbconnection, name = myLocalTableName)
+  }
+
+  # Closing connection with local Schema
+  dbDisconnect(mydbconnection)
+
+  #To close all open connections
+  lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+  
+  return(slookup)
+}
+```
+
+```{r MySQLReadTable, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+
+my.data <- readMySQLTable('tbl_tidypaysatxt')
+
+```
+
+```{r GroupData, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE, results='hide'}
+library(dplyr)
+
+my.data$Skills <- trimws(my.data$Skills)
+my.data$Salary <- as.numeric(my.data$Salary)
+
+my.data_tbl <- filter(my.data , Type == "Expected Salary")
+my.Skills_tbl <- tally(group_by(my.data_tbl, Skills, State))
+my.Skills_tbl$n <- as.numeric(my.Skills_tbl$n)
+my.Salaries_tbl <- my.data_tbl %>%
+                  group_by(Skills, State) %>%
+                  summarise(Salary = median(Salary))
+
+```
+
+```{r Plotly_setup, echo=FALSE,  warning=FALSE, error=FALSE, cache=FALSE, results='hide', message=FALSE}
+library(plotly)
+Sys.setenv("plotly_username"="data607g3")
+Sys.setenv("plotly_api_key"="dDZhymyplVxhzUuXv2MX")
+```
+
+## Number of Skills by State
+
+```{r Shiny_Plotly_SkillsCounts, height=800, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# load packages
+
+library(shiny)
+library(shinythemes)
+library(plotly)
+library(tidyverse)
+
+# import data, fix column names
+
+df <- my.Skills_tbl
+df$Rank <- -df$n %>%
+            rank() %>%
+            round(0)
+
+
+# user interface selectes disease and year
+
+ui <- fluidPage(
+ headerPanel('Skills by State'),
+ sidebarPanel(
+   selectInput('skill', 'Skills', unique(df$Skills), selected='Algorithms')
+ ),
+ mainPanel(
+   plotlyOutput('plot1'),
+   verbatimTextOutput('mystats')
+ )
+)
+
+# server code filters and returns data in plotly
+
+server <- function(input, output, session) {
+
+selectedData <- reactive({
+   dfSlice <- df %>%
+     filter(Skills == input$skill) %>%
+     mutate(staterank=min_rank(n)) %>%
+     arrange(staterank)
+ })
+
+
+output$plot1 <- renderPlotly({
+
+   plot_ly(selectedData(), x = ~State, y = ~n, type='bar') %>%
+             layout(title = "Number of Skills by State",
+                    xaxis = list(categoryorder = "array",
+                                 categoryarray = ~n,
+                                 type = "category"),
+                    yaxis = list(title = "Total of Skills"))
+})
+
+}
+
+shinyApp(ui = ui, server = server)
+
+```
+
+## Median Salary by State
+
+The below graph displays the median salary for the positions requiring the selected skill by state.
+
+
+```{r Shiny_Plotly_SkillsSalary, height=800, echo=FALSE, warning=FALSE, error=FALSE, message=FALSE}
+
+# load packages
+
+library(shiny)
+library(shinythemes)
+library(plotly)
+library(tidyverse)
+
+# import data, fix column names
+
+df <- my.Salaries_tbl
+df$Rank <- -df$Salary %>%
+            rank() %>%
+            round(0)
+
+
+# user interface selectes disease and year
+
+ui <- fluidPage(
+ headerPanel('Median Salary by State'),
+ sidebarPanel(
+   selectInput('skill', 'Skills', unique(df$Skills), selected='Algorithms')
+ ),
+ mainPanel(
+   plotlyOutput('plot1'),
+   verbatimTextOutput('mystats')
+ )
+)
+
+# server code filters and returns data in plotly
+
+server <- function(input, output, session) {
+
+selectedData <- reactive({
+   dfSlice <- df %>%
+     filter(Skills == input$skill) %>%
+     mutate(staterank=min_rank(Salary)) %>%
+     arrange(staterank)
+ })
+
+
+output$plot1 <- renderPlotly({
+
+   plot_ly(selectedData(), x = ~State, y = ~Salary, type='bar') %>%
+             layout(title = "Median Salary by State",
+                    xaxis = list(categoryorder = "array",
+                                 categoryarray = ~Salary,
+                                 type = "category"),
+                    yaxis = list(title = "Median Salary"))
+})
+
+
+
+
+}
+
+shinyApp(ui = ui, server = server)
+```
